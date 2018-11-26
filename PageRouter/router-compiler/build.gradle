@@ -1,0 +1,12 @@
+apply plugin: 'java'
+sourceCompatibility = "7"
+targetCompatibility = "7"
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "com.google.auto.service:auto-service:$AUTO_SERVICE_VERSION"
+    implementation "com.squareup:javapoet:$JAVAPOET_VERSION"
+    implementation project(':router-annotation')
+}
+
+
