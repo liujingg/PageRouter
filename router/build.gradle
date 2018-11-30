@@ -1,5 +1,8 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply from: "../pom-evaluator.gradle"
 apply plugin: 'kotlin-android'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion COMPILE_SDK_VERSION.toInteger()
@@ -7,8 +10,8 @@ android {
     defaultConfig {
         minSdkVersion MIN_SDK_VERSION.toInteger()
         targetSdkVersion TARGET_SDK_VERSION.toInteger()
-        versionCode 1
-        versionName "1.0"
+        versionCode VERSION_CODE.toInteger()
+        versionName VERSION_NAME
     }
 
     buildTypes {
@@ -16,6 +19,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    lintOptions {
+        abortOnError false
     }
 
 }
@@ -26,3 +33,14 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$KOTLIN_VERSION"
     api project(':router-annotation')
 }
+
+publish {
+    userOrg = 'liujing'
+    groupId = POM_GROUP_ID
+    publishVersion = VERSION_NAME
+    artifactId = 'router'
+    repoName = 'pagerouter'
+    website = 'https://github.com/liujingg/PageRouter'
+    desc = ''
+}
+

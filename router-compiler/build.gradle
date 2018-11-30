@@ -1,4 +1,7 @@
 apply plugin: 'java'
+apply plugin: 'maven'
+apply from: "../pom-evaluator.gradle"
+apply plugin: 'com.novoda.bintray-release'
 sourceCompatibility = "7"
 targetCompatibility = "7"
 
@@ -7,6 +10,16 @@ dependencies {
     implementation "com.google.auto.service:auto-service:$AUTO_SERVICE_VERSION"
     implementation "com.squareup:javapoet:$JAVAPOET_VERSION"
     implementation project(':router-annotation')
+}
+
+publish {
+    userOrg = 'liujing'
+    groupId = POM_GROUP_ID
+    publishVersion = VERSION_NAME
+    artifactId = 'router-compiler'
+    repoName = 'pagerouter'
+    website = 'https://github.com/liujingg/PageRouter'
+    desc = ''
 }
 
 

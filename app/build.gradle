@@ -9,8 +9,8 @@ android {
         applicationId "com.liujing.pagerouter.example"
         minSdkVersion MIN_SDK_VERSION.toInteger()
         targetSdkVersion TARGET_SDK_VERSION.toInteger()
-        versionCode 1
-        versionName "1.0"
+        versionCode VERSION_CODE.toInteger()
+        versionName VERSION_NAME
     }
     buildTypes {
         release {
