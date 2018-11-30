@@ -13,8 +13,7 @@ version|[ ![Download](https://api.bintray.com/packages/liujing/pagerouter/router
 #### Demo
 This repository also contains this demo project.
 
-![Demo](static/pagerouter-demo.gif)
-
+![Demo](pagerouter-demo.gif)
 #### Feature
 
 1. **Support activity jumps by standard uri**
@@ -202,4 +201,4 @@ Create a new Activity for monitoring scheme events
 
 #### License
 
-[Apache 2.0](static/LICENSE)
+[Apache 2.0](LICENSE)
