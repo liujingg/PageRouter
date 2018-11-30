@@ -142,9 +142,25 @@ Fragment
 ```
 
 
-**6. Advanced usage**
+**6. Processing jump results**
 
-*Jump by url from external*
+```kotlin
+    Router.startActivity(
+       this,
+       "pagerouter://other?id=17", object : RouteCallback {
+            override fun onSuccess(context: Context, uri: Uri) {
+                Toast.makeText(context, "success", Toast.LENGTH_SHORT).show()
+       }
+
+            override fun onFailed(context: Context?, message: String?) {
+                Toast.makeText(context, "failed : $message", Toast.LENGTH_SHORT).show()
+       }
+    })
+
+```
+
+
+**7. From external jump**
 
 AndroidManifest.xml
 
@@ -186,17 +202,42 @@ Create a new Activity for monitoring scheme events
     }
 ```
 
-*Intercept jump process*
+**8. Intercept jump process**
 
-//TDDO
+Recommended setIntercept in the Application class.
 
-*Processing jump results*
+```java
+     Router.setIntercept(new IIntercept() {
+                @Override
+                public void process(@NonNull Context context, @NonNull Uri uri, InterceptorCallback callback) {
+                    if (...) {
+                        //TODO do something
+                        callback.onInterrupt(result, message);//interrupt routing process
+                    } else {
+                        callback.onContinue(uri);
+                    }
+                }
+            });
 
-//TDDO
+```
 
-*Global demotion strategy*
+**9. Global demotion strategy**
 
-//TDDO
+Recommended setDefaultCallBack in the Application class.
+
+```java
+     Router.setDefaultCallBack(new RouteCallback() {
+                @Override
+                public void onSuccess(Context context, Uri uri) {
+
+                }
+
+                @Override
+                public void onFailed(Context context, String message) {
+                    //TODO do something
+                }
+            });
+```
 
 
 #### License

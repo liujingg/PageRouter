@@ -3,25 +3,25 @@
 package com.liujing.pagerouter
 
 import android.app.Activity
-import kotlin.properties.ReadWriteProperty
+import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-fun Activity.routerIntArgOr(argName: String, defaultValue: Int = 0): ReadWriteProperty<Activity, Int> =
+fun Activity.routerIntArgOr(argName: String, defaultValue: Int = 0): ReadOnlyProperty<Activity, Int> =
         ArgLazy(argName) { _, _: KProperty<*> -> readIntArgOr(argName, defaultValue) }
 
-fun Activity.routerBooleanArgOr(argName: String, defaultValue: Boolean = false): ReadWriteProperty<Activity, Boolean> =
+fun Activity.routerBooleanArgOr(argName: String, defaultValue: Boolean = false): ReadOnlyProperty<Activity, Boolean> =
         ArgLazy(argName) { _, _: KProperty<*> -> readBooleanArgOr(argName, defaultValue) }
 
-fun Activity.routerLongArgOr(argName: String, defaultValue: Long = 0L): ReadWriteProperty<Activity, Long> =
+fun Activity.routerLongArgOr(argName: String, defaultValue: Long = 0L): ReadOnlyProperty<Activity, Long> =
         ArgLazy(argName) { _, _: KProperty<*> -> readLongArgOr(argName, defaultValue) }
 
-fun Activity.routerDoubleArgOr(argName: String, defaultValue: Double = 0.toDouble()): ReadWriteProperty<Activity, Double> =
+fun Activity.routerDoubleArgOr(argName: String, defaultValue: Double = 0.toDouble()): ReadOnlyProperty<Activity, Double> =
         ArgLazy(argName) { _, _: KProperty<*> -> readDoubleArgOr(argName, defaultValue) }
 
-fun Activity.routerFloatArgOr(argName: String, defaultValue: Float = 0f): ReadWriteProperty<Activity, Float> =
+fun Activity.routerFloatArgOr(argName: String, defaultValue: Float = 0f): ReadOnlyProperty<Activity, Float> =
         ArgLazy(argName) { _, _: KProperty<*> -> readFloatArgOr(argName, defaultValue) }
 
-fun Activity.routerStringArgOr(argName: String, defaultValue: String?= null): ReadWriteProperty<Activity, String> =
+fun Activity.routerStringArgOr(argName: String, defaultValue: String? = null): ReadOnlyProperty<Activity, String> =
         ArgLazy(argName) { _, _: KProperty<*> -> readStringArgOr(argName, defaultValue) }
 
 
@@ -62,7 +62,7 @@ fun readStringArg(activity: Activity, argName: String, defaultValue: String?): S
     return SafeBundle(activity.intent?.extras, activity.intent?.data).getString(argName, defaultValue)
 }
 
-class ArgLazy<in REF, OUT : Any>(private val argName: String, private val initializer: (REF, KProperty<*>) -> OUT?) : ReadWriteProperty<REF, OUT> {
+class ArgLazy<in REF, OUT : Any>(private val argName: String, private val initializer: (REF, KProperty<*>) -> OUT?) : ReadOnlyProperty<REF, OUT> {
     private object EMPTY
 
     private var arg: Any = EMPTY
@@ -73,9 +73,5 @@ class ArgLazy<in REF, OUT : Any>(private val argName: String, private val initia
         }
         @Suppress("UNCHECKED_CAST")
         return arg as OUT
-    }
-
-    override fun setValue(thisRef: REF, property: KProperty<*>, value: OUT) {
-        this.arg = value
     }
 }

@@ -5,20 +5,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
-import androidx.core.util.Pair;
-import androidx.fragment.app.Fragment;
+
 import com.liujing.pagerouter.annotation.RouterField;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
+import androidx.fragment.app.Fragment;
 
 public class Router {
     private static Map<String, Class<? extends Activity>> sActivityRouter = new HashMap<>();
     private static Map<String, Pair<Class<? extends Activity>, Class<? extends Fragment>>> sFragmentRouter = new HashMap<>();
     private static String sScheme = "router";
-    private static Filter sFilter;
-    private static String sFragmentClassName="fragmentClass";
-
+    private static String sFragmentClassName = "fragmentClass";
+    private static IIntercept sIntercept;
+    private static RouteCallback defaultRouteCallback;
 
     private Router(Activity activity) {
         activity.getIntent().getExtras();
@@ -148,112 +157,98 @@ public class Router {
         routerInitializer.initFragmentTable(sFragmentRouter);
     }
 
-    public static boolean startActivity(Context context, String url) {
-        if (sFilter != null) {
-            url = sFilter.doFilter(url);
-            if (sFilter.startActivity(context, url)) {
-                return true;
-            }
+    public static void startActivity(@NonNull Context context, String url) {
+        if (defaultRouteCallback != null) {
+            startActivity(context, Uri.parse(url), defaultRouteCallback);
+        } else {
+            if (TextUtils.isEmpty(url)) return;
+            startActivity(context, Uri.parse(url), null);
         }
-        if (TextUtils.isEmpty(url)) {
-            return false;
-        }
-        Uri uri = Uri.parse(url);
+    }
 
-        Class activityClazz = getActivityClass(url, uri);
+    public static void startActivity(@NonNull Context context, Uri uri) {
+        if (defaultRouteCallback != null) {
+            startActivity(context, uri, defaultRouteCallback);
+        } else {
+            if (uri == null) return;
+            startActivity(context, uri, null);
+        }
+    }
+
+    public static void startActivity(@NonNull Context context, String url, RouteCallback routeCallback) {
+        if (routeCallback == null) routeCallback = defaultRouteCallback;
+        if (TextUtils.isEmpty(url)) {
+            if (routeCallback != null) routeCallback.onFailed(context, "router url is empty");
+            return;
+        }
+        startActivity(context, Uri.parse(url), routeCallback);
+    }
+
+    public static void startActivity(@NonNull final Context context, final Uri uri, final RouteCallback routeCallback) {
+        if (uri == null) {
+            if (routeCallback != null) {
+                routeCallback.onFailed(context, "router uri is null");
+            } else if (defaultRouteCallback != null) {
+                defaultRouteCallback.onFailed(context, "router uri is null");
+            }
+            return;
+        }
+
+        if (sIntercept != null) {
+            sIntercept.process(context, uri, new InterceptorCallback() {
+                @Override
+                public void onContinue(@NonNull Uri newUri) {
+                    realStartActivity(context, newUri, routeCallback != null ? routeCallback : defaultRouteCallback);
+                }
+
+                @Override
+                public void onInterrupt(boolean isSuccess, @Nullable String message) {
+                    if (isSuccess) {
+                        if (routeCallback != null) {
+                            routeCallback.onSuccess(context, uri);
+                        } else if (defaultRouteCallback != null) {
+                            defaultRouteCallback.onSuccess(context, uri);
+                        }
+                    } else {
+                        if (routeCallback != null) {
+                            routeCallback.onFailed(context, message);
+                        } else if (defaultRouteCallback != null) {
+                            defaultRouteCallback.onFailed(context, message);
+                        }
+                    }
+                }
+            });
+        } else {
+            realStartActivity(context, uri, routeCallback != null ? routeCallback : defaultRouteCallback);
+        }
+    }
+
+    private static void realStartActivity(@NonNull Context context, @NonNull Uri uri, @Nullable RouteCallback routeCallback) {
+        Class activityClazz = getActivityClass(uri);
         if (activityClazz != null) {
             Intent intent = new Intent(context, activityClazz);
             intent.setData(uri);
-            if (!(context instanceof Activity)) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            }
+            if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
-            return true;
+            if (routeCallback != null) routeCallback.onSuccess(context, uri);
         } else {
-            Pair<Class<? extends Activity>, Class<? extends Fragment>> pair = getFragmentActivityPair(url, uri);
+            Pair<Class<? extends Activity>, Class<? extends Fragment>> pair = getFragmentActivityPair(uri);
             if (pair != null && pair.first != null && pair.second != null) {
                 Intent intent = new Intent(context, pair.first);
                 intent.setData(uri);
                 intent.putExtra(sFragmentClassName, pair.second.getName());
-                if (!(context instanceof Activity)) {
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                }
+                if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
-                return true;
+                if (routeCallback != null) routeCallback.onSuccess(context, uri);
             } else {
-                new Throwable(url + " can not startActivity").printStackTrace();
+                if (routeCallback != null)
+                    routeCallback.onFailed(context, "not found destination in router table , url : " + uri.toString());
             }
         }
-        return false;
     }
 
-    public static boolean startActivityForResult(Activity activity, String url, int requestCode) {
-        if (sFilter != null) {
-            url = sFilter.doFilter(url);
-            if (sFilter.startActivityForResult(activity, url, requestCode)) {
-                return true;
-            }
-        }
-        if (TextUtils.isEmpty(url)) {
-            return false;
-        }
-        Uri uri = Uri.parse(url);
-
-        Class activityClazz = getActivityClass(url, uri);
-        if (activityClazz != null) {
-            Intent intent = new Intent(activity, activityClazz);
-            intent.setData(uri);
-            activity.startActivityForResult(intent, requestCode);
-            return true;
-        } else {
-            Pair<Class<? extends Activity>, Class<? extends Fragment>> pair = getFragmentActivityPair(url, uri);
-            if (pair != null && pair.first != null && pair.second != null) {
-                Intent intent = new Intent(activity, pair.first);
-                intent.setData(uri);
-                intent.putExtra(sFragmentClassName, pair.second.getName());
-                activity.startActivityForResult(intent, requestCode);
-                return true;
-            } else {
-                new Throwable(url + " can not startActivity").printStackTrace();
-            }
-        }
-        return false;
-    }
-
-    public static boolean startActivityForResult(Fragment fragment, String url, int requestCode) {
-        if (sFilter != null) {
-            url = sFilter.doFilter(url);
-            if (sFilter.startActivityForResult(fragment, url, requestCode)) {
-                return true;
-            }
-        }
-        if (TextUtils.isEmpty(url)) {
-            return false;
-        }
-        Uri uri = Uri.parse(url);
-
-        Class activityClazz = getActivityClass(url, uri);
-        if (activityClazz != null) {
-            Intent intent = new Intent(fragment.getActivity(), activityClazz);
-            intent.setData(uri);
-            fragment.startActivityForResult(intent, requestCode);
-            return true;
-        } else {
-            Pair<Class<? extends Activity>, Class<? extends Fragment>> pair = getFragmentActivityPair(url, uri);
-            if (pair != null && pair.first != null && pair.second != null) {
-                Intent intent = new Intent(fragment.getActivity(), pair.first);
-                intent.setData(uri);
-                intent.putExtra(sFragmentClassName, pair.second.getName());
-                fragment.startActivityForResult(intent, requestCode);
-                return true;
-            } else {
-                new Throwable(url + " can not startActivity").printStackTrace();
-            }
-        }
-        return false;
-    }
-
-    private static Class<? extends Activity> getActivityClass(String url, Uri uri) {
+    private static Class<? extends Activity> getActivityClass(@NonNull Uri uri) {
+        String url = uri.toString();
         String key;
         int tmp = url.indexOf('?');
         if (tmp > 0) {
@@ -272,7 +267,8 @@ public class Router {
         return null;
     }
 
-    private static Pair<Class<? extends Activity>, Class<? extends Fragment>> getFragmentActivityPair(String url, Uri uri) {
+    private static Pair<Class<? extends Activity>, Class<? extends Fragment>> getFragmentActivityPair(@NonNull Uri uri) {
+        String url = uri.toString();
         String key;
         int tmp = url.indexOf('?');
         if (tmp > 0) {
@@ -310,9 +306,12 @@ public class Router {
         }
     }
 
-    public static void setFilter(Filter filter) {
-        Router.sFilter = filter;
+    public static void setIntercept(IIntercept intercept) {
+        Router.sIntercept = intercept;
     }
 
+    public static void setDefaultCallBack(RouteCallback routeCallback) {
+        Router.defaultRouteCallback = routeCallback;
+    }
 
 }
