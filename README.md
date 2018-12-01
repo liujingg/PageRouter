@@ -171,16 +171,6 @@ AndroidManifest.xml
             <category android:name="android.intent.category.DEFAULT"/>
             <category android:name="android.intent.category.BROWSABLE"/>
 
-            <data
-                 android:host="details"
-                 android:scheme="market"/>
-        </intent-filter>
-
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW"/>
-            <category android:name="android.intent.category.DEFAULT"/>
-            <category android:name="android.intent.category.BROWSABLE"/>
-
             <data android:scheme="myscheme"/>
         </intent-filter>
     </activity>
