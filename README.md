@@ -6,7 +6,7 @@ A lightweight router framework for Android applications.
 
 #### Lastest version
 
-module|router|arouter-compiler|router-annotation
+module|router|router-compiler|router-annotation
 ---|---|---|---
 version|[ ![Download](https://api.bintray.com/packages/liujing/pagerouter/router/images/download.svg) ](https://bintray.com/liujing/pagerouter/router/_latestVersion)|[ ![Download](https://api.bintray.com/packages/liujing/pagerouter/router-compiler/images/download.svg) ](https://bintray.com/liujing/pagerouter/router-compiler/_latestVersion)|[ ![Download](https://api.bintray.com/packages/liujing/pagerouter/router-annotation/images/download.svg) ](https://bintray.com/liujing/pagerouter/router-annotation/_latestVersion)
 
