@@ -8,8 +8,6 @@ import android.text.TextUtils;
 
 import com.liujing.pagerouter.annotation.RouterField;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
