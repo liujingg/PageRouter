@@ -45,11 +45,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
             R.id.button3 -> Router.startActivity(
                     this,
-                    "pagerouter://second2?id=17&age=56&name=PageRouter&isShow=true&price=123.92"
+                    Uri.parse("pagerouter://second2?id=17&age=56&name=PageRouter&isShow=true&price=123.92")
             )
             R.id.button4 -> Router.startActivity(
                     this,
-                    "pagerouter://other?id=17&age=56&name=OtherModule&isShow=true&price=93.92", object : RouteCallback {
+                    Uri.parse("pagerouter://other?id=17&age=56&name=OtherModule&isShow=true&price=93.92"), object : RouteCallback {
                 override fun onSuccess(context: Context, uri: Uri) {
                     Toast.makeText(context, "other module jump success", Toast.LENGTH_SHORT).show()
                 }
@@ -60,15 +60,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             })
             R.id.button5 -> Router.startActivity(
                     this,
-                    "pagerouter://kotlin?id=17&age=56&name=Kotlin&isShow=true&price=93.92"
+                    Uri.parse("pagerouter://kotlin?id=17&age=56&name=Kotlin&isShow=true&price=93.92")
             )
             R.id.button6 -> Router.startActivity(
                     this,
-                    "pagerouter://myfragment?id=15&age=64&name=fragment router&isShow=true&price=18.92")
+                    Uri.parse("pagerouter://myfragment?id=15&age=64&name=fragment router&isShow=true&price=18.92"))
 
             R.id.button7 -> Router.startActivity(
                     this,
-                    "pagerouter://browser?url=https://github.com/liujingg/PageRouter")
+                    Uri.parse("pagerouter://browser?url=https://github.com/liujingg/PageRouter"))
         }
     }
 }

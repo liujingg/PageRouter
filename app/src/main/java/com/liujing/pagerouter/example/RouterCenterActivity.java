@@ -11,7 +11,7 @@ public class RouterCenterActivity extends Activity {
         super.onCreate(savedInstanceState);
         Uri data = getIntent().getData();
         if (data != null) {
-            Router.startActivity(this, data.toString());
+            Router.startActivity(this, data);
         }
         this.finish();
     }

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.text.TextUtils;
 
 import com.liujing.pagerouter.annotation.RouterField;
 
@@ -34,10 +33,8 @@ public class Router {
 
     private static List<Field> getDeclaredFields(Class clazz) {
         List<Field> fieldList = new ArrayList<>();
-        for (; clazz != Object.class; clazz = clazz.getSuperclass()) {
-            Field[] fields = clazz.getDeclaredFields();
-            fieldList.addAll(Arrays.asList(fields));
-        }
+        if (clazz.getSuperclass() != Object.class)
+            fieldList.addAll(Arrays.asList(clazz.getDeclaredFields()));
         return fieldList;
     }
 
@@ -156,15 +153,6 @@ public class Router {
         routerInitializer.initFragmentTable(sFragmentRouter);
     }
 
-    public static void startActivity(@NonNull Context context, String url) {
-        if (defaultRouteCallback != null) {
-            startActivity(context, Uri.parse(url), defaultRouteCallback);
-        } else {
-            if (TextUtils.isEmpty(url)) return;
-            startActivity(context, Uri.parse(url), null);
-        }
-    }
-
     public static void startActivity(@NonNull Context context, Uri uri) {
         if (defaultRouteCallback != null) {
             startActivity(context, uri, defaultRouteCallback);
@@ -172,15 +160,6 @@ public class Router {
             if (uri == null) return;
             startActivity(context, uri, null);
         }
-    }
-
-    public static void startActivity(@NonNull Context context, String url, RouteCallback routeCallback) {
-        if (routeCallback == null) routeCallback = defaultRouteCallback;
-        if (TextUtils.isEmpty(url)) {
-            if (routeCallback != null) routeCallback.onFailed(context, "router url is empty");
-            return;
-        }
-        startActivity(context, Uri.parse(url), routeCallback);
     }
 
     public static void startActivity(@NonNull final Context context, final Uri uri, final RouteCallback routeCallback) {
