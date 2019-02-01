@@ -8,11 +8,11 @@ import android.util.Log;
 import java.io.Serializable;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class SafeBundle {
+public class BundleUri {
     private Bundle bundle;
     private Uri uri;
 
-    public SafeBundle(Bundle bundle, Uri uri) {
+    public BundleUri(Bundle bundle, Uri uri) {
         this.bundle = bundle;
         this.uri = uri;
         if (this.bundle == null) {
@@ -61,111 +61,72 @@ public class SafeBundle {
     }
 
     public String getString(String key, String defaultValue) {
-        Object o = bundle.get(key);
-        if (o == null && uri != null) {
-            o = uri.getQueryParameter(key);
-        }
-        if (o == null) {
-            return defaultValue;
-        }
-        return o.toString();
+        Object o = bundle != null ? bundle.get(key) : null;
+        if (o == null && uri != null) o = uri.getQueryParameter(key);
+        return o != null ? o.toString() : defaultValue;
     }
 
     public double getDouble(String key, double defaultValue) {
-        Object o = bundle.get(key);
-        if (o == null && uri != null) {
-            o = uri.getQueryParameter(key);
-        }
-        if (o == null) {
-            return defaultValue;
-        }
+        Object o = bundle != null ? bundle.get(key) : null;
+        if (o == null && uri != null) o = uri.getQueryParameter(key);
+        if (o == null) return defaultValue;
         try {
-            if (o instanceof String) {
-                return Double.parseDouble(o.toString());
-            }
+            if (o instanceof String) return Double.parseDouble(o.toString());
             return (Double) o;
         } catch (ClassCastException e) {
-            typeWarning(key, o, "Double", defaultValue, e);
+            printLog(key, o, "Double", defaultValue);
             return defaultValue;
         }
     }
-
 
     public long getLong(String key, long defaultValue) {
-        Object o = bundle.get(key);
-        if (o == null && uri != null) {
-            o = uri.getQueryParameter(key);
-        }
-        if (o == null) {
-            return defaultValue;
-        }
+        Object o = bundle != null ? bundle.get(key) : null;
+        if (o == null && uri != null) o = uri.getQueryParameter(key);
+        if (o == null) return defaultValue;
         try {
-            if (o instanceof String) {
-                return Long.parseLong(o.toString());
-            }
+            if (o instanceof String) return Long.parseLong(o.toString());
             return (Long) o;
         } catch (ClassCastException e) {
-            typeWarning(key, o, "Long", defaultValue, e);
+            printLog(key, o, "Long", defaultValue);
             return defaultValue;
         }
     }
-
 
     public int getInt(String key, int defaultValue) {
-        Object o = bundle.get(key);
-        if (o == null && uri != null) {
-            o = uri.getQueryParameter(key);
-        }
-        if (o == null) {
-            return defaultValue;
-        }
+        Object o = bundle != null ? bundle.get(key) : null;
+        if (o == null && uri != null) o = uri.getQueryParameter(key);
+        if (o == null) return defaultValue;
         try {
-            if (o instanceof String) {
-                return Integer.parseInt(o.toString());
-            }
+            if (o instanceof String) return Integer.parseInt(o.toString());
             return (Integer) o;
         } catch (ClassCastException e) {
-            typeWarning(key, o, "Integer", defaultValue, e);
+            printLog(key, o, "Integer", defaultValue);
             return defaultValue;
         }
     }
-
 
     public boolean getBoolean(String key, boolean defaultValue) {
-        Object o = bundle.get(key);
-        if (o == null && uri != null) {
-            o = uri.getQueryParameter(key);
-        }
-        if (o == null) {
-            return defaultValue;
-        }
+        Object o = bundle != null ? bundle.get(key) : null;
+        if (o == null && uri != null) o = uri.getQueryParameter(key);
+        if (o == null) return defaultValue;
         try {
-            if (o instanceof String) {
-                return Boolean.parseBoolean(o.toString());
-            }
+            if (o instanceof String) return Boolean.parseBoolean(o.toString());
             return (Boolean) o;
         } catch (ClassCastException e) {
-            typeWarning(key, o, "Boolean", defaultValue, e);
+            printLog(key, o, "Boolean", defaultValue);
             return defaultValue;
         }
     }
 
-
     public float getFloat(String key, float defaultValue) {
-        Object o = bundle.get(key);
-        if (o == null && uri != null) {
-            o = uri.getQueryParameter(key);
-        }
-        if (o == null) {
-            return defaultValue;
-        }
+        Object o = bundle != null ? bundle.get(key) : null;
+        if (o == null && uri != null) o = uri.getQueryParameter(key);
+        if (o == null) return defaultValue;
         try {
-            if (o instanceof String) {
-                return Float.parseFloat(o.toString());
-            }
+            if (o instanceof String) return Float.parseFloat(o.toString());
             return (Float) o;
         } catch (ClassCastException e) {
-            typeWarning(key, o, "Float", defaultValue, e);
+            printLog(key, o, "Float", defaultValue);
             return defaultValue;
         }
     }
@@ -186,9 +147,10 @@ public class SafeBundle {
         return !bundle.containsKey(key) && (uri == null || uri.getQueryParameter(key) == null);
     }
 
-    private void typeWarning(String key, Object value, String className, Object defaultValue, ClassCastException e) {
-        String sb = "Key " + key + " expected " + className + " but value was a " + value.getClass().getName() + ".  The default value " + defaultValue + " was returned.";
-        Log.w("Router_SafeBundle", sb);
+    private void printLog(String key, Object value, String className, Object defaultValue) {
+        String msg = "Key : " + key + ". expected a " + className + " class, but value was a " +
+                value.getClass().getName() + ".  The default value " + defaultValue + " was returned.";
+        Log.w("Router_BundleUri", msg);
     }
 
 }

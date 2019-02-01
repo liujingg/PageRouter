@@ -5,12 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.liujing.pagerouter.RouterArgsx;
+import com.liujing.pagerouter.annotation.RouterField;
+import com.liujing.pagerouter.annotation.RouterFragment;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import com.liujing.pagerouter.Router;
-import com.liujing.pagerouter.annotation.RouterField;
-import com.liujing.pagerouter.annotation.RouterFragment;
 
 @RouterFragment(value = "myfragment", activityClazz = FragmentContainerActivity.class)
 public class MyFragment extends Fragment {
@@ -37,7 +39,7 @@ public class MyFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        Router.inject(this);
+        RouterArgsx.inject(this);
         TextView textview = view.findViewById(R.id.params_text);
         String builder = getClass().getSimpleName() + '\n' +
                 "id:" + String.valueOf(id) + '\n' +

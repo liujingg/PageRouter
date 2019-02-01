@@ -4,7 +4,6 @@
           package="com.liujing.pagerouter.example">
 
     <application
-            android:name=".MyApplication"
             tools:replace="android:allowBackup"
             android:allowBackup="false"
             android:icon="@mipmap/ic_launcher"

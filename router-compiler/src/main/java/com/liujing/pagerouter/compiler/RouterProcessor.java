@@ -4,9 +4,22 @@ package com.liujing.pagerouter.compiler;
 import com.google.auto.service.AutoService;
 import com.liujing.pagerouter.annotation.RouterActivity;
 import com.liujing.pagerouter.annotation.RouterFragment;
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 
-import javax.annotation.processing.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -15,10 +28,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.util.Elements;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes({"com.liujing.pagerouter.annotation.RouterActivity", "com.liujing.pagerouter.annotation.RouterFragment"})
@@ -38,8 +47,7 @@ public class RouterProcessor extends AbstractProcessor {
         ClassName activityRouteTableInitializer = ClassName.get("com.liujing.pagerouter", "RouterInitializer");
         TypeSpec.Builder typeSpec = TypeSpec.classBuilder((targetModuleName.length() == 0 ? "Apt" : targetModuleName) + "RouterInitializer")
                 .addSuperinterface(activityRouteTableInitializer)
-                .addModifiers(Modifier.PUBLIC)
-                .addStaticBlock(CodeBlock.of(String.format("Router.register(new %sRouterInitializer());", (targetModuleName.length() == 0 ? "Apt" : targetModuleName))));
+                .addModifiers(Modifier.PUBLIC);
 
         TypeElement activityRouteTableInitializerTypeElement = mElementUtils.getTypeElement(activityRouteTableInitializer.toString());
         List<? extends Element> members = mElementUtils.getAllMembers(activityRouteTableInitializerTypeElement);

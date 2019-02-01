@@ -2,13 +2,15 @@ package com.liujing.pagerouter.example;
 
 import android.os.Bundle;
 import android.widget.TextView;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import com.liujing.pagerouter.Router;
+
+import com.liujing.pagerouter.RouterArgsx;
 import com.liujing.pagerouter.annotation.RouterActivity;
 import com.liujing.pagerouter.annotation.RouterField;
 
-@RouterActivity({"second"})
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+@RouterActivity({"second", "second3"})
 public class SecondActivity extends AppCompatActivity {
     @RouterField("id")
     private int id;
@@ -25,12 +27,11 @@ public class SecondActivity extends AppCompatActivity {
     @RouterField("time")
     private long time;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_common);
-        Router.inject(this);
+        RouterArgsx.inject(this);
 
         TextView textview = findViewById(R.id.params_text);
         String builder = getClass().getSimpleName() + '\n' +

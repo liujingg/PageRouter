@@ -4,15 +4,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.text.TextUtils;
 
-import com.liujing.pagerouter.annotation.RouterField;
+import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,212 +20,91 @@ import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
 public class Router {
-    private static Map<String, Class<? extends Activity>> sActivityRouter = new HashMap<>();
-    private static Map<String, Pair<Class<? extends Activity>, Class<? extends Fragment>>> sFragmentRouter = new HashMap<>();
-    private static String sScheme = "router";
-    private static String sFragmentClassName = "fragmentClass";
-    private static IIntercept sIntercept;
-    private static RouteCallback defaultRouteCallback;
+    public static final int ERROR_CODE_URI_NULL = 101;
+    public static final int ERROR_CODE_NOT_SUPPORT = 102;
 
-    private Router(Activity activity) {
-        activity.getIntent().getExtras();
+    public static String FRAGMENT_CLASS_NAME = "fragmentClassName";
+    public static String FRAGMENT_ARGUMENTS = "fragmentArguments";
+    public static String FRAGMENT_URI = "fragmentUri";
+
+    @NonNull
+    private String uriScheme;
+    private static Map<String, Class<? extends Activity>> activityRouterMap = new HashMap<>();
+    private static Map<String, Pair<Class<? extends Activity>, Class<? extends Fragment>>> fragmentRouterMap = new HashMap<>();
+    private LinkedHashSet<Interceptor> interceptors = new LinkedHashSet<>();
+
+    public Router(@NonNull String uriScheme, @NonNull RouterInitializer initializer) {
+        this.uriScheme = uriScheme;
+        initializer.initActivityTable(activityRouterMap);
+        initializer.initFragmentTable(fragmentRouterMap);
     }
 
-    private static List<Field> getDeclaredFields(Class clazz) {
-        List<Field> fieldList = new ArrayList<>();
-        if (clazz.getSuperclass() != Object.class)
-            fieldList.addAll(Arrays.asList(clazz.getDeclaredFields()));
-        return fieldList;
+    public void register(@NonNull RouterInitializer initializer) {
+        initializer.initActivityTable(activityRouterMap);
+        initializer.initFragmentTable(fragmentRouterMap);
     }
 
-    public static void inject(Fragment fragment) {
-        SafeBundle bundle = new SafeBundle(fragment.getArguments(), fragment.getActivity() != null ? fragment.getActivity().getIntent().getData() : null);
-        Class clazz = fragment.getClass();
-        List<Field> fields = getDeclaredFields(clazz);
-        for (Field field : fields) {
-            RouterField annotation = field.getAnnotation(RouterField.class);
-            if (annotation == null) {
-                continue;
-            }
-            String type = field.getGenericType().toString();
-            field.setAccessible(true);
-            String[] names = annotation.value();
-            try {
-                for (String name : names) {
-                    if (bundle.containsKey(name)) {
-                        continue;
-                    }
-                    switch (type) {
-                        case "int":
-                            field.set(fragment, bundle.getInt(name, field.getInt(fragment)));
-                            continue;
-                        case "boolean":
-                            field.set(fragment, bundle.getBoolean(name, field.getBoolean(fragment)));
-                            continue;
-                        case "long":
-                            field.set(fragment, bundle.getLong(name, field.getLong(fragment)));
-                            continue;
-                        case "float":
-                            field.set(fragment, bundle.getFloat(name, field.getFloat(fragment)));
-                            continue;
-                        case "double":
-                            field.set(fragment, bundle.getDouble(name, field.getDouble(fragment)));
-                            continue;
-                    }
-                    Object defaultValue = field.get(fragment);
-                    if (field.getGenericType() == String.class) {
-                        field.set(fragment, bundle.getString(name, (String) defaultValue));
-                    } else if (field.getGenericType() == Integer.class) {
-                        field.set(fragment, bundle.getInt(name, defaultValue != null ? (Integer) defaultValue : 0));
-                    } else if (field.getGenericType() == Boolean.class) {
-                        field.set(fragment, bundle.getBoolean(name, defaultValue != null ? (Boolean) defaultValue : false));
-                    } else if (field.getGenericType() == Double.class) {
-                        field.set(fragment, bundle.getDouble(name, defaultValue != null ? (Double) defaultValue : 0));
-                    } else if (field.getGenericType() == Long.class) {
-                        field.set(fragment, bundle.getLong(name, defaultValue != null ? (Long) defaultValue : 0));
-                    } else if (field.getGenericType() == Float.class) {
-                        field.set(fragment, bundle.getFloat(name, defaultValue != null ? (Float) defaultValue : 0));
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void inject(Activity activity) {
-        SafeBundle bundle = new SafeBundle(activity.getIntent().getExtras(), activity.getIntent().getData());
-        Class clazz = activity.getClass();
-        List<Field> fields = getDeclaredFields(clazz);
-        for (Field field : fields) {
-            RouterField annotation = field.getAnnotation(RouterField.class);
-            if (annotation == null) {
-                continue;
-            }
-            String type = field.getGenericType().toString();
-            field.setAccessible(true);
-            String[] names = annotation.value();
-            try {
-                for (String name : names) {
-                    if (bundle.containsKey(name)) {
-                        continue;
-                    }
-                    switch (type) {
-                        case "int":
-                            field.set(activity, bundle.getInt(name, field.getInt(activity)));
-                            continue;
-                        case "boolean":
-                            field.set(activity, bundle.getBoolean(name, field.getBoolean(activity)));
-                            continue;
-                        case "long":
-                            field.set(activity, bundle.getLong(name, field.getLong(activity)));
-                            continue;
-                        case "float":
-                            field.set(activity, bundle.getFloat(name, field.getFloat(activity)));
-                            continue;
-                        case "double":
-                            field.set(activity, bundle.getDouble(name, field.getDouble(activity)));
-                            continue;
-                    }
-                    Object defaultValue = field.get(activity);
-                    if (field.getGenericType() == String.class) {
-                        field.set(activity, bundle.getString(name, (String) defaultValue));
-                    } else if (field.getGenericType() == Integer.class) {
-                        field.set(activity, bundle.getInt(name, defaultValue != null ? (Integer) defaultValue : 0));
-                    } else if (field.getGenericType() == Boolean.class) {
-                        field.set(activity, bundle.getBoolean(name, defaultValue != null ? (Boolean) defaultValue : false));
-                    } else if (field.getGenericType() == Long.class) {
-                        field.set(activity, bundle.getLong(name, defaultValue != null ? (Long) defaultValue : 0));
-                    } else if (field.getGenericType() == Float.class) {
-                        field.set(activity, bundle.getFloat(name, defaultValue != null ? (Float) defaultValue : 0));
-                    } else if (field.getGenericType() == Double.class) {
-                        field.set(activity, bundle.getDouble(name, defaultValue != null ? (Double) defaultValue : 0));
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void register(RouterInitializer routerInitializer) {
-        routerInitializer.initActivityTable(sActivityRouter);
-        routerInitializer.initFragmentTable(sFragmentRouter);
-    }
-
-    public static void startActivity(@NonNull Context context, Uri uri) {
-        if (defaultRouteCallback != null) {
-            startActivity(context, uri, defaultRouteCallback);
-        } else {
-            if (uri == null) return;
-            startActivity(context, uri, null);
-        }
-    }
-
-    public static void startActivity(@NonNull final Context context, final Uri uri, final RouteCallback routeCallback) {
+    public boolean startActivity(@NonNull final Context context, @Nullable final Uri uri, @Nullable final Callback callback) {
         if (uri == null) {
-            if (routeCallback != null) {
-                routeCallback.onFailed(context, "router uri is null");
-            } else if (defaultRouteCallback != null) {
-                defaultRouteCallback.onFailed(context, "router uri is null");
+            if (callback != null) callback.onFailed(context, null, ERROR_CODE_URI_NULL, null);
+            return false;
+        }
+        InterceptResult interceptResult = null;
+        for (Interceptor interceptor : interceptors) {
+            InterceptResult tempInterceptResult = interceptor.onIntercept(context, uri);
+            if (tempInterceptResult != null) {
+                interceptResult = tempInterceptResult;
+                break;
             }
-            return;
         }
 
-        if (sIntercept != null) {
-            sIntercept.process(context, uri, new InterceptorCallback() {
-                @Override
-                public void onContinue(@NonNull Uri newUri) {
-                    realStartActivity(context, newUri, routeCallback != null ? routeCallback : defaultRouteCallback);
-                }
+        if (interceptResult != null) {
+            if (interceptResult.isSuccess()) {
+                if (callback != null) callback.onSuccess(context, uri);
+                return true;
+            } else {
+                if (callback != null)
+                    callback.onFailed(context, uri, interceptResult.getErrorCode(), interceptResult.getErrorMessage());
+                return false;
+            }
+        }
 
-                @Override
-                public void onInterrupt(boolean isSuccess, @Nullable String message) {
-                    if (isSuccess) {
-                        if (routeCallback != null) {
-                            routeCallback.onSuccess(context, uri);
-                        } else if (defaultRouteCallback != null) {
-                            defaultRouteCallback.onSuccess(context, uri);
-                        }
-                    } else {
-                        if (routeCallback != null) {
-                            routeCallback.onFailed(context, message);
-                        } else if (defaultRouteCallback != null) {
-                            defaultRouteCallback.onFailed(context, message);
-                        }
-                    }
-                }
-            });
+        Intent intent = buildActivityIntent(context, uri);
+        if (intent != null) {
+            if (!(context instanceof Activity)) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+            if (callback != null) callback.onSuccess(context, uri);
+            return true;
         } else {
-            realStartActivity(context, uri, routeCallback != null ? routeCallback : defaultRouteCallback);
+            if (callback != null) callback.onFailed(context, uri, ERROR_CODE_NOT_SUPPORT, null);
+            return false;
         }
     }
 
-    private static void realStartActivity(@NonNull Context context, @NonNull Uri uri, @Nullable RouteCallback routeCallback) {
+    private Intent buildActivityIntent(@NonNull Context context, @NonNull Uri uri) {
         Class activityClazz = getActivityClass(uri);
         if (activityClazz != null) {
             Intent intent = new Intent(context, activityClazz);
             intent.setData(uri);
-            if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-            if (routeCallback != null) routeCallback.onSuccess(context, uri);
-        } else {
-            Pair<Class<? extends Activity>, Class<? extends Fragment>> pair = getFragmentActivityPair(uri);
-            if (pair != null && pair.first != null && pair.second != null) {
-                Intent intent = new Intent(context, pair.first);
-                intent.setData(uri);
-                intent.putExtra(sFragmentClassName, pair.second.getName());
-                if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
-                if (routeCallback != null) routeCallback.onSuccess(context, uri);
-            } else {
-                if (routeCallback != null)
-                    routeCallback.onFailed(context, "not found destination in router table , url : " + uri.toString());
-            }
+            intent.putExtras(uriParamsToBundle(uri));
+            return intent;
         }
+        Pair<Class<? extends Activity>, Class<? extends Fragment>> pair = getFragmentActivityPair(uri);
+        if (pair != null && pair.first != null && pair.second != null) {
+            Intent intent = new Intent(context, pair.first);
+            intent.setData(uri);
+            intent.putExtra(FRAGMENT_CLASS_NAME, pair.second.getName());
+            Bundle bundle = uriParamsToBundle(uri);
+            bundle.putParcelable(FRAGMENT_URI, uri);
+            intent.putExtra(FRAGMENT_ARGUMENTS, bundle);
+            return intent;
+        }
+        return null;
     }
 
-    private static Class<? extends Activity> getActivityClass(@NonNull Uri uri) {
+    private Class<? extends Activity> getActivityClass(@NonNull Uri uri) {
         String url = uri.toString();
         String key;
         int tmp = url.indexOf('?');
@@ -234,18 +113,18 @@ public class Router {
         } else {
             key = url;
         }
-        Class<? extends Activity> clazz = sActivityRouter.get(key);
+        Class<? extends Activity> clazz = activityRouterMap.get(key);
         if (clazz != null) {
             return clazz;
         }
-        if (sScheme.equals(uri.getScheme())) {
+        if (uriScheme.equals(uri.getScheme())) {
             key = uri.getHost();
-            return sActivityRouter.get(key);
+            return activityRouterMap.get(key);
         }
         return null;
     }
 
-    private static Pair<Class<? extends Activity>, Class<? extends Fragment>> getFragmentActivityPair(@NonNull Uri uri) {
+    private Pair<Class<? extends Activity>, Class<? extends Fragment>> getFragmentActivityPair(@NonNull Uri uri) {
         String url = uri.toString();
         String key;
         int tmp = url.indexOf('?');
@@ -255,41 +134,68 @@ public class Router {
             key = url;
         }
 
-        Pair<Class<? extends Activity>, Class<? extends Fragment>> fragmentActivityPair = sFragmentRouter.get(key);
+        Pair<Class<? extends Activity>, Class<? extends Fragment>> fragmentActivityPair = fragmentRouterMap.get(key);
         if (fragmentActivityPair != null) {
             return fragmentActivityPair;
         }
-        if (sScheme.equals(uri.getScheme())) {
+        if (uriScheme.equals(uri.getScheme())) {
             key = uri.getHost();
-            return sFragmentRouter.get(key);
+            return fragmentRouterMap.get(key);
         }
         return null;
     }
 
-    @SuppressWarnings("unused")
-    public static String getScheme() {
-        return sScheme;
+    @NonNull
+    private Bundle uriParamsToBundle(@NonNull Uri uri) {
+        Bundle bundle = new Bundle();
+        Set<String> keys = uri.getQueryParameterNames();
+        if (keys == null || keys.isEmpty()) return bundle;
+        for (String key : keys) {
+            String value = uri.getQueryParameter(key);
+            if (TextUtils.isEmpty(value)) continue;
+            bundle.putString(key, value);
+        }
+        return bundle;
     }
 
-    public static String getFragmentClassName() {
-        return sFragmentClassName;
-    }
-
-    public static void init(String scheme) {
-        Router.sScheme = scheme;
-        try {
-            Class.forName("com.liujing.pagerouter.AptRouterInitializer");
-        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
+    /**
+     * Creates a new instance of Fragment by this uri.
+     *
+     * @param uri uri
+     */
+    public Fragment buildFragment(@NotNull Uri uri) {
+        Pair<Class<? extends Activity>, Class<? extends Fragment>> pair = getFragmentActivityPair(uri);
+        if (pair != null && pair.second != null) {
+            Fragment fragment;
+            try {
+                fragment = (Fragment) Class.forName(pair.second.getName()).newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            Bundle bundle = uriParamsToBundle(uri);
+            bundle.putParcelable(FRAGMENT_URI, uri);
+            fragment.setArguments(bundle);
+            return fragment;
+        } else {
+            throw new IllegalArgumentException("No matches to Fragment by uri: " + uri.toString());
         }
     }
 
-    public static void setIntercept(IIntercept intercept) {
-        Router.sIntercept = intercept;
+    /**
+     * Adds the specified interceptor to the interceptors set
+     *
+     * @param interceptor interceptor to be added to the set
+     */
+    public void addInterceptor(@NonNull Interceptor interceptor) {
+        interceptors.add(interceptor);
     }
 
-    public static void setDefaultCallBack(RouteCallback routeCallback) {
-        Router.defaultRouteCallback = routeCallback;
+    /**
+     * Removes the specified interceptor from the interceptors set
+     *
+     * @param interceptor interceptor to be removed from the set
+     */
+    public void removeInterceptor(@NonNull Interceptor interceptor) {
+        interceptors.remove(interceptor);
     }
-
 }

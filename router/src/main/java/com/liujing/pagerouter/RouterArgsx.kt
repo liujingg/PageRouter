@@ -39,27 +39,27 @@ fun Activity.readStringArgOr(argName: String, defaultValue: String?): String = r
 
 
 fun readIntArg(activity: Activity, argName: String, defaultValue: Int): Int {
-    return SafeBundle(activity.intent?.extras, activity.intent?.data).getInt(argName, defaultValue)
+    return BundleUri(activity.intent?.extras, activity.intent?.data).getInt(argName, defaultValue)
 }
 
 fun readBooleanArg(activity: Activity, argName: String, defaultValue: Boolean): Boolean {
-    return SafeBundle(activity.intent?.extras, activity.intent?.data).getBoolean(argName, defaultValue)
+    return BundleUri(activity.intent?.extras, activity.intent?.data).getBoolean(argName, defaultValue)
 }
 
 fun readLongArg(activity: Activity, argName: String, defaultValue: Long): Long {
-    return SafeBundle(activity.intent?.extras, activity.intent?.data).getLong(argName, defaultValue)
+    return BundleUri(activity.intent?.extras, activity.intent?.data).getLong(argName, defaultValue)
 }
 
 fun readDoubleArg(activity: Activity, argName: String, defaultValue: Double): Double {
-    return SafeBundle(activity.intent?.extras, activity.intent?.data).getDouble(argName, defaultValue)
+    return BundleUri(activity.intent?.extras, activity.intent?.data).getDouble(argName, defaultValue)
 }
 
 fun readFloatArg(activity: Activity, argName: String, defaultValue: Float): Float {
-    return SafeBundle(activity.intent?.extras, activity.intent?.data).getFloat(argName, defaultValue)
+    return BundleUri(activity.intent?.extras, activity.intent?.data).getFloat(argName, defaultValue)
 }
 
 fun readStringArg(activity: Activity, argName: String, defaultValue: String?): String {
-    return SafeBundle(activity.intent?.extras, activity.intent?.data).getString(argName, defaultValue)
+    return BundleUri(activity.intent?.extras, activity.intent?.data).getString(argName, defaultValue)
 }
 
 class ArgLazy<in REF, OUT : Any>(private val argName: String, private val initializer: (REF, KProperty<*>) -> OUT?) : ReadOnlyProperty<REF, OUT> {

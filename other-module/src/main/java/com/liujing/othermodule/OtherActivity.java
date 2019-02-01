@@ -2,10 +2,12 @@ package com.liujing.othermodule;
 
 import android.os.Bundle;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
-import com.liujing.pagerouter.Router;
+
+import com.liujing.pagerouter.RouterArgsx;
 import com.liujing.pagerouter.annotation.RouterActivity;
 import com.liujing.pagerouter.annotation.RouterField;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 @RouterActivity("other")
 public class OtherActivity extends AppCompatActivity {
@@ -28,7 +30,7 @@ public class OtherActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_other);
-        Router.inject(this);
+        RouterArgsx.inject(this);
 
         TextView textview = findViewById(R.id.params_text);
         String builder = getClass().getSimpleName() + '\n' +
