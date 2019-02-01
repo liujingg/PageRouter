@@ -65,16 +65,17 @@ Kotlin project configuration
 
 **1. Initialize the SDK**
 
-Recommended to initialize in the Application class.
 ``` java
-    Router.init("pagerouter"); //your application's specific scheme
+    // your application's specific scheme
+    // main module's default initializer
+    Router router = new Router(SCHEME, new AptRouterInitializer());
 ```
 
 Register other module initializer or manually add router entry.
 
 ``` java
-    Router.register(new OtherRouterInitializer());
-    Router.register(new RouterInitializer() {
+    router.register(new OtherRouterInitializer());
+    router.register(new RouterInitializer() {
         @Override
         public void initActivityTable(Map<String, Class<? extends Activity>> router) {
             router.put("second2", SecondActivity.class);
@@ -122,7 +123,7 @@ Fragment
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_common);
 
-            Router.inject(this);// PageRouter will automatically set value of fields
+            RouterArgsx.inject(this);// PageRouter will automatically set value of fields
             ...
         }
     }
@@ -131,7 +132,7 @@ Fragment
 **4. Start routing**
 
 ```java
-    Router.startActivity(context,"scheme://second?id=17")
+    Router.startActivity(context,Uri.parse("scheme://second?id=17"),null)
 ```
 
 
@@ -147,12 +148,11 @@ Fragment
 ```kotlin
     Router.startActivity(
        this,
-       "pagerouter://other?id=17", object : RouteCallback {
+       Uri.parse("scheme://second?id=17"), object : Callback {
             override fun onSuccess(context: Context, uri: Uri) {
                 Toast.makeText(context, "success", Toast.LENGTH_SHORT).show()
        }
-
-            override fun onFailed(context: Context?, message: String?) {
+            override fun onFailed(context: Context, uri: Uri?, errorCode:Int, message: String?) {
                 Toast.makeText(context, "failed : $message", Toast.LENGTH_SHORT).show()
        }
     })
@@ -183,9 +183,9 @@ Create a new Activity for monitoring scheme events
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            Uri data = getIntent().getData();
-            if (data != null) {
-                Router.startActivity(this, data.toString());
+            Uri uri = getIntent().getData();
+            if (uri != null) {
+                Router.startActivity(this, uri, null);
             }
             this.finish();
         }
@@ -194,45 +194,27 @@ Create a new Activity for monitoring scheme events
 
 **8. Intercept jump process**
 
-Recommended setIntercept in the Application class.
-
 ```java
-     Router.setIntercept(new IIntercept() {
-                @Override
-                public void process(@NonNull Context context, @NonNull Uri uri, InterceptorCallback callback) {
-                    if (...) {
-                        //TODO do something
-                        callback.onInterrupt(result, message);//interrupt routing process
-                    } else {
-                        callback.onContinue(uri);
-                    }
-                }
-            });
-
+   router.addInterceptor(new MyIntercept());
 ```
 
-**9. Global demotion strategy**
-
-Recommended setDefaultCallBack in the Application class.
-
 ```java
-     Router.setDefaultCallBack(new RouteCallback() {
-                @Override
-                public void onSuccess(Context context, Uri uri) {
-
-                }
-
-                @Override
-                public void onFailed(Context context, String message) {
-                    //TODO do something
-                }
-            });
+   class MyIntercept implements Interceptor {
+        @Override
+        public InterceptResult onIntercept(@NonNull Context context, @NonNull Uri uri) {
+             ...
+             return null;
+             ...
+             return InterceptResult.success();
+             ...
+             return InterceptResult.failed(errorCode, errorMessage);
+        }
+   }
 ```
-
 
 #### License
 
-    Copyright(c)  2018 Liujing
+    Copyright(c)  2019 Liujing
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
