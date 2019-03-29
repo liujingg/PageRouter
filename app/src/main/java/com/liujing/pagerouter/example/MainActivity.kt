@@ -42,10 +42,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
 
             R.id.button3 ->
-                RouterManager.instance(Uri.parse("pagerouter://second2?id=3&name=PageRouter&isShow=true&price=123.92&time=$currentTime")).start(this)
+                RouterManager.start(this,Uri.parse("pagerouter://second2?id=3&name=PageRouter&isShow=true&price=123.92&time=$currentTime"))
 
             R.id.button4 ->
-                RouterManager.instance(Uri.parse("pagerouter://other?id=4&name=other module&isShow=true&price=34.92&time=$currentTime")).start(this, object : Callback {
+                RouterManager.start(this,Uri.parse("pagerouter://other?id=4&name=other module&isShow=true&price=34.92&time=$currentTime"), object : Callback {
                     override fun onSuccess(context: Context, uri: Uri) {
                         Toast.makeText(context, "other module jump success", Toast.LENGTH_SHORT).show()
                     }
@@ -56,13 +56,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 })
 
             R.id.button5 ->
-                RouterManager.instance(Uri.parse("pagerouter://kotlin?id=5&name=Kotlin&isShow=true&price=93.92&time=$currentTime")).start(this)
+                RouterManager.start(this,Uri.parse("pagerouter://kotlin?id=5&name=Kotlin&isShow=true&price=93.92&time=$currentTime"))
 
             R.id.button6 ->
-                RouterManager.instance(Uri.parse("pagerouter://myfragment?id=15&name=fragment router&isShow=true&price=18.92&time=$currentTime")).start(this)
+                RouterManager.start(this,Uri.parse("pagerouter://myfragment?id=15&name=fragment router&isShow=true&price=18.92&time=$currentTime"))
 
             R.id.button7 ->
-                RouterManager.instance(Uri.parse("pagerouter://browser?url=https://github.com/liujingg/PageRouter")).start(this)
+                RouterManager.start(this,Uri.parse("pagerouter://browser?url=https://github.com/liujingg/PageRouter"))
         }
     }
 }

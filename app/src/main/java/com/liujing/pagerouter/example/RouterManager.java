@@ -20,8 +20,8 @@ import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
 public final class RouterManager {
-    public static final String SCHEME = "pagerouter";
-    public static final Router ROUTER;
+    private static final String SCHEME = "pagerouter";
+    private static final Router ROUTER;
 
     static {
         Router router = new Router(RouterManager.SCHEME, new AptRouterInitializer());
@@ -41,23 +41,11 @@ public final class RouterManager {
         ROUTER = router;
     }
 
-    @NonNull
-    private Uri uri;
-
-    private RouterManager(@NonNull Uri uri) {
-        this.uri = uri;
+    public static boolean start(@NonNull Context context, @NonNull Uri uri) {
+        return start(context, uri, null);
     }
 
-    @NonNull
-    public static RouterManager instance(@NonNull Uri uri) {
-        return new RouterManager(uri);
-    }
-
-    public boolean start(@NonNull Context context) {
-        return start(context, null);
-    }
-
-    public boolean start(@NonNull Context context, @Nullable final Callback callback) {
+    public static boolean start(@NonNull Context context, @NonNull Uri uri, @Nullable final Callback callback) {
         return ROUTER.startActivity(context, uri, new Callback() {
             @Override
             public void onSuccess(@NonNull Context context, @NonNull Uri uri) {

@@ -10,7 +10,7 @@ public class RouterCenterActivity extends Activity {
         super.onCreate(savedInstanceState);
         Uri uri = getIntent().getData();
         if (uri != null) {
-            RouterManager.instance(uri).start(this);
+            RouterManager.start(this,uri);
         }
         this.finish();
     }
