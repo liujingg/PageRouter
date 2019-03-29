@@ -1,7 +1,6 @@
 package com.liujing.pagerouter.compiler;
 
 
-import com.google.auto.service.AutoService;
 import com.liujing.pagerouter.annotation.RouterActivity;
 import com.liujing.pagerouter.annotation.RouterFragment;
 import com.squareup.javapoet.ClassName;
@@ -16,7 +15,6 @@ import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -29,9 +27,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.util.Elements;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes({"com.liujing.pagerouter.annotation.RouterActivity", "com.liujing.pagerouter.annotation.RouterFragment"})
-@AutoService(Processor.class)
 public class RouterProcessor extends AbstractProcessor {
     private Elements mElementUtils;
     private String targetModuleName = "";
