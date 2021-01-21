@@ -1,0 +1,12 @@
+apply plugin: 'java'
+apply plugin: 'com.github.panpf.bintray-publish'
+
+publish {
+    userOrg = 'liujing'
+    groupId = POM_GROUP_ID
+    publishVersion = VERSION_NAME
+    artifactId = 'router-annotation'
+    repoName = 'pagerouter'
+    website = 'https://github.com/liujingg/PageRouter'
+    desc = 'Android, Router'
+}
