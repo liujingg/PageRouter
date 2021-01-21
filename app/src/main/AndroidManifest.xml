@@ -31,7 +31,6 @@
         </activity>
 
         <activity android:name=".SecondActivity"/>
-        <activity android:name=".KotlinActivity"/>
         <activity android:name=".FragmentContainerActivity"/>
     </application>
 

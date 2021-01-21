@@ -18,7 +18,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         findViewById<View>(R.id.button2).setOnClickListener(this)
         findViewById<View>(R.id.button3).setOnClickListener(this)
         findViewById<View>(R.id.button4).setOnClickListener(this)
-        findViewById<View>(R.id.button5).setOnClickListener(this)
         findViewById<View>(R.id.button6).setOnClickListener(this)
         findViewById<View>(R.id.button7).setOnClickListener(this)
     }
@@ -54,9 +53,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         Toast.makeText(context, "other module jump failed : $message", Toast.LENGTH_SHORT).show()
                     }
                 })
-
-            R.id.button5 ->
-                RouterManager.start(this,Uri.parse("pagerouter://kotlin?id=5&name=Kotlin&isShow=true&price=93.92&time=$currentTime"))
 
             R.id.button6 ->
                 RouterManager.start(this,Uri.parse("pagerouter://myfragment?id=15&name=fragment router&isShow=true&price=18.92&time=$currentTime"))
