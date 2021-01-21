@@ -5,7 +5,9 @@ plugins {
     id("com.github.panpf.bintray-publish")
     id("kotlin-kapt")
 }
-apply(from = "../pom-evaluator.gradle")
+
+group = property("POM_GROUP_ID").toString()
+version = property("VERSION_NAME").toString()
 
 android {
     compileSdkVersion(property("COMPILE_SDK_VERSION").toString().toInt())

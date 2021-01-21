@@ -3,7 +3,9 @@ plugins {
     id("maven")
     id("com.github.panpf.bintray-publish")
 }
-apply(from = "../pom-evaluator.gradle")
+
+group = property("POM_GROUP_ID").toString()
+version = property("VERSION_NAME").toString()
 
 dependencies {
     implementation("com.squareup:javapoet:${property("JAVAPOET_VERSION")}")
